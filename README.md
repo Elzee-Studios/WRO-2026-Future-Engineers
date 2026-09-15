@@ -1,6 +1,6 @@
 # WRO 2026 Future Engineers — Self-Driving Car
 
-This repository documents our autonomous vehicle for the WRO 2026 Future Engineers category. It contains the engineering journal, mechanical and electrical designs, source code, testing evidence, photographs, CAD files, and demonstration-video links needed to understand and reproduce the vehicle.
+This repository documents our autonomous vehicle for the WRO 2026 Future Engineers category. It contains the engineering journal, mechanical and electrical designs, source code, testing evidence, photographs, and demonstration-video links needed to understand and reproduce the vehicle.
 
 > **Team:** [Team name]  
 > **Country:** Saudi Arabia  
@@ -18,7 +18,6 @@ This repository documents our autonomous vehicle for the WRO 2026 Future Enginee
 | [`schemes/`](schemes/) | Wiring, mechanical-layout, power-distribution, and software diagrams |
 | [`src/`](src/) | Open Challenge, Obstacle Challenge, and shared source code |
 | [`testing/`](testing/) | Calibration procedures, test results, and performance data |
-| [`models/`](models/) | CAD, 3D-printing, laser-cutting, and CNC files |
 | [`vehicle-photos/`](vehicle-photos/) | Front, rear, left, right, top, and bottom vehicle photographs |
 | [`team-photos/`](team-photos/) | Team photographs |
 | [`video/`](video/) | Links to Open and Obstacle Challenge demonstration videos |
