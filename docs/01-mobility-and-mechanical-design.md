@@ -22,6 +22,5 @@
 
 ## Supporting files
 - Mechanical diagrams: [`../schemes/`](../schemes/)
-- CAD files: [`../models/`](../models/)
 - Vehicle photographs: [`../vehicle-photos/`](../vehicle-photos/)
 
