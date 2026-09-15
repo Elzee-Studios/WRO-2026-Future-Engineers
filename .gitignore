@@ -1,0 +1,20 @@
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+
+# Build outputs and temporary files
+build/
+dist/
+*.tmp
+*.log
+
+# Secrets and local configuration
+.env
+.env.*
+secrets.*
+
