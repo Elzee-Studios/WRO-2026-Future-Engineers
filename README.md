@@ -67,7 +67,4 @@ Each video should contain at least 30 seconds of autonomous driving and be publi
 
 The dated engineering journal is available in [`engineering-journal/`](engineering-journal/). It records our decisions and development process rather than only the final assembly.
 
-## Repository status
-
-This repository is under active development for the WRO 2026 season. Bracketed prompts will be replaced with evidence from our actual robot development. The final README will contain at least 5,000 characters of substantive English documentation, as required by WRO.
 
