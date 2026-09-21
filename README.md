@@ -2,7 +2,7 @@
 
 This repository documents our autonomous vehicle for the WRO 2026 Future Engineers category. It contains the engineering journal, mechanical and electrical designs, source code, testing evidence, photographs, and demonstration-video links needed to understand and reproduce the vehicle.
 
-> **Team:** [Team name]  
+> **Team:** KFS Engineers  
 > **Country:** Saudi Arabia  
 > **School/Organization:** King Faisal School 
 > **Team members:** Layth Alzahrani & Mohamemed Albassam  
