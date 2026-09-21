@@ -19,8 +19,3 @@
 | Version/date | Test or problem | Evidence | Change made | Result |
 |---|---|---|---|---|
 | | | | | |
-
-## Supporting files
-- Mechanical diagrams: [`../schemes/`](../schemes/)
-- Vehicle photographs: [`../vehicle-photos/`](../vehicle-photos/)
-
