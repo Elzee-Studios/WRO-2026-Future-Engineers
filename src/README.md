@@ -1,6 +1,5 @@
 # Source Code
 
-- `common/`: shared drivers, configuration, sensing, control, and utility modules
 - `open_challenge/`: Open Challenge entry point and challenge-specific logic
 - `obstacle_challenge/`: Obstacle Challenge entry point and challenge-specific logic
 
