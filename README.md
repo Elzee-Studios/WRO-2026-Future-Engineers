@@ -17,7 +17,6 @@ This repository documents our autonomous vehicle for the WRO 2026 Future Enginee
 | [`hardware/`](hardware/) | Bill of materials and component specifications |
 | [`schemes/`](schemes/) | Wiring, mechanical-layout, power-distribution, and software diagrams |
 | [`src/`](src/) | Open Challenge, Obstacle Challenge, and shared source code |
-| [`testing/`](testing/) | Calibration procedures, test results, and performance data |
 | [`vehicle-photos/`](vehicle-photos/) | Front, rear, left, right, top, and bottom vehicle photographs |
 | [`team-photos/`](team-photos/) | Team photographs |
 | [`video/`](video/) | Links to Open and Obstacle Challenge demonstration videos |
