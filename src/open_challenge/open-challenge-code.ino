@@ -1,20 +1,22 @@
 #include <Servo.h>
 
 // =====================================================
-// PINS
+// PIN SETUP
 // =====================================================
 
+// Steering servo
 const int SERVO_PIN = 7;
 
-// Motor
+// Drive motor
 const int MOTOR_PWM = 5;
 const int MOTOR_IN1 = 32;
 const int MOTOR_IN2 = 33;
 
-// Start button: D34 -> button -> GND
+// Start button
+// Wired from D34 to GND, so INPUT_PULLUP is used
 const int START_BUTTON = 34;
 
-// Color sensor
+// TCS3200 color sensor
 const int S0 = 35;
 const int S1 = 36;
 const int S2 = 37;
@@ -23,43 +25,50 @@ const int COLOR_OUT = 39;
 
 
 // =====================================================
-// SETTINGS
+// ROBOT SETTINGS
 // =====================================================
 
+// We count 12 blue-line corners:
+// 4 corners per lap × 3 laps
 int cornerCount = 0;
 
-// After 12th corner:
-// drive straight for 1.8 seconds then stop
+// After the 12th corner, keep driving straight
+// for this long before stopping
 const unsigned long FINISH_DRIVE_MS = 1250;
 
-// Straight
+// Steering angles
 const int STEER_CENTER = 82;
-
-// Left turn
 const int STEER_LEFT = 55;
 
-// Speeds
+// Motor speeds
 const int NORMAL_SPEED = 140;
-const int TURN_SPEED   = 155;
+const int TURN_SPEED = 155;
 
-// Locked left turn
+// How long the robot keeps the steering locked left
+// when a blue line is detected
 const unsigned long TURN_TIME_MS = 1000;
 
 
 // =====================================================
-// GLOBALS
+// GLOBAL VARIABLES
 // =====================================================
 
 Servo steering;
 
+// Prevents the same blue line from triggering
+// multiple turns while the sensor is still over it
 bool blueArmed = true;
+
+// Counts how many consecutive non-blue readings we get
+// before allowing another blue-line trigger
 int nonBlueReadings = 0;
 
 
 // =====================================================
-// MOTOR
+// MOTOR FUNCTIONS
 // =====================================================
 
+// Drive the robot forward at the requested PWM speed
 void driveForward(int speedValue) {
 
   digitalWrite(MOTOR_IN1, HIGH);
@@ -69,6 +78,7 @@ void driveForward(int speedValue) {
 }
 
 
+// Stop the drive motor completely
 void stopMotor() {
 
   analogWrite(MOTOR_PWM, 0);
@@ -79,19 +89,26 @@ void stopMotor() {
 
 
 // =====================================================
-// COLOR SENSOR
+// COLOR SENSOR FUNCTIONS
 // =====================================================
 
+// Reads one color channel from the TCS3200.
+//
+// S2 and S3 select which color filter is active.
+// The sensor gives a pulse frequency, so we convert
+// the pulse duration into a simple frequency-like value.
 unsigned long readColorChannel(bool s2, bool s3) {
 
   digitalWrite(S2, s2);
   digitalWrite(S3, s3);
 
+  // Small delay so the sensor has time to switch filters
   delay(3);
 
   unsigned long pulse =
       pulseIn(COLOR_OUT, LOW, 30000);
 
+  // No pulse received within timeout
   if (pulse == 0) {
     return 0;
   }
@@ -100,10 +117,8 @@ unsigned long readColorChannel(bool s2, bool s3) {
 }
 
 
-// =====================================================
-// AVERAGE 3 READINGS
-// =====================================================
-
+// Take 3 readings and average them.
+// This makes the color detection more stable.
 unsigned long averageColor(bool s2, bool s3) {
 
   unsigned long total = 0;
@@ -120,23 +135,28 @@ unsigned long averageColor(bool s2, bool s3) {
 // =====================================================
 // COLOR DETECTION
 //
-// 0 = OTHER
-// 1 = BLUE
-// 2 = ORANGE
+// Returns:
+// 0 = other / white
+// 1 = blue
+// 2 = orange
 // =====================================================
 
 int detectColor() {
 
+  // Read red channel
   unsigned long R =
       averageColor(LOW, LOW);
 
+  // Read green channel
   unsigned long G =
       averageColor(HIGH, HIGH);
 
+  // Read blue channel
   unsigned long B =
       averageColor(LOW, HIGH);
 
 
+  // Print raw values so we can calibrate the sensor
   Serial.print("R: ");
   Serial.print(R);
 
@@ -150,14 +170,16 @@ int detectColor() {
 
 
   // =================================================
-  // BLUE
+  // BLUE DETECTION
   //
-  // UPDATED RANGE
+  // These ranges were calibrated from the real field.
   //
   // R: 10000 - 19000
   // G:  9000 - 14500
   // B: 11000 - 20500
-  // =====================================================
+  //
+  // The last condition helps separate blue from orange.
+  // =================================================
 
   if (
       R >= 10000 &&
@@ -179,10 +201,11 @@ int detectColor() {
 
 
   // =================================================
-  // ORANGE
+  // ORANGE DETECTION
   //
-  // Robot does NOT turn for orange
-  // =====================================================
+  // Orange is only identified for debugging.
+  // The robot does not turn when it sees orange.
+  // =================================================
 
   if (
       R >= 17500 &&
@@ -203,6 +226,7 @@ int detectColor() {
   }
 
 
+  // Anything outside the blue/orange ranges
   Serial.println("OTHER");
 
   return 0;
@@ -210,33 +234,33 @@ int detectColor() {
 
 
 // =====================================================
-// LEFT TURN
+// BLUE-LINE TURN
 // =====================================================
 
 void turnLeft() {
 
   Serial.println();
   Serial.println(">>> BLUE DETECTED");
-  Serial.println(">>> LOCKING LEFT TURN");
+  Serial.println(">>> STARTING LEFT TURN");
 
 
-  // Turn left
+  // Turn the steering left
   steering.write(STEER_LEFT);
 
 
-  // Keep moving during turn
+  // Keep the car moving while turning
   driveForward(TURN_SPEED);
 
 
-  // Stay locked left
+  // Hold the turn for the calibrated amount of time
   delay(TURN_TIME_MS);
 
 
-  // Return to center
+  // Straighten the wheels again
   steering.write(STEER_CENTER);
 
 
-  // Continue straight
+  // Return to normal driving speed
   driveForward(NORMAL_SPEED);
 
 
@@ -246,7 +270,7 @@ void turnLeft() {
 
 
 // =====================================================
-// FINISH RUN
+// FINISH THE RUN
 // =====================================================
 
 void finishRun() {
@@ -254,34 +278,34 @@ void finishRun() {
   Serial.println();
   Serial.println("============================");
   Serial.println(">>> 3 LAPS COMPLETE");
-  Serial.println(">>> DRIVE STRAIGHT 1800 MS");
+  Serial.println(">>> MOVING INTO FINISH AREA");
   Serial.println("============================");
 
 
-  // Center steering
+  // Make sure the wheels are straight
   steering.write(STEER_CENTER);
 
 
-  // Continue straight
+  // Continue forward into the finish section
   driveForward(NORMAL_SPEED);
 
 
-  // Drive into finish area
+  // Drive a little farther after the final corner
   delay(FINISH_DRIVE_MS);
 
 
-  // Stop
+  // Stop the robot
   stopMotor();
 
 
-  // Keep servo centered
+  // Keep the wheels centered when stopped
   steering.write(STEER_CENTER);
 
 
   Serial.println(">>> STOPPED");
 
 
-  // Stay stopped forever
+  // Stay stopped permanently until the robot is reset
   while (true) {
 
     steering.write(STEER_CENTER);
@@ -302,29 +326,31 @@ void setup() {
   Serial.begin(115200);
 
 
-  // =================================================
-  // SERVO
-  // =====================================================
+  // -------------------------------------------------
+  // Steering servo
+  // -------------------------------------------------
 
   steering.attach(SERVO_PIN);
 
+  // Start with the wheels centered
   steering.write(STEER_CENTER);
 
 
-  // =================================================
-  // MOTOR
-  // =====================================================
+  // -------------------------------------------------
+  // Motor
+  // -------------------------------------------------
 
   pinMode(MOTOR_PWM, OUTPUT);
   pinMode(MOTOR_IN1, OUTPUT);
   pinMode(MOTOR_IN2, OUTPUT);
 
+  // Robot should not move before the start button
   stopMotor();
 
 
-  // =================================================
-  // COLOR SENSOR
-  // =====================================================
+  // -------------------------------------------------
+  // Color sensor
+  // -------------------------------------------------
 
   pinMode(S0, OUTPUT);
   pinMode(S1, OUTPUT);
@@ -335,21 +361,19 @@ void setup() {
   pinMode(COLOR_OUT, INPUT);
 
 
-  // 20% frequency scaling
+  // Set TCS3200 output frequency scaling to 20%
   digitalWrite(S0, HIGH);
   digitalWrite(S1, LOW);
 
 
-  // =================================================
-  // START BUTTON
-  // =====================================================
+  // -------------------------------------------------
+  // Start button
+  // -------------------------------------------------
 
-  pinMode(
-    START_BUTTON,
-    INPUT_PULLUP
-  );
+  pinMode(START_BUTTON, INPUT_PULLUP);
 
 
+  // Reset corner count whenever the robot restarts
   cornerCount = 0;
 
 
@@ -357,51 +381,39 @@ void setup() {
   Serial.println("READY - PRESS BUTTON");
 
 
-  // Keep steering centered while waiting
+  // Keep the wheels centered while waiting
   steering.write(STEER_CENTER);
 
 
-  // =================================================
-  // WAIT FOR BUTTON PRESS
-  // =====================================================
-
-  while (
-    digitalRead(START_BUTTON) == HIGH
-  ) {
+  // Wait until the start button is pressed
+  while (digitalRead(START_BUTTON) == HIGH) {
 
     steering.write(STEER_CENTER);
   }
 
 
-  // Reset servo when button is pressed
+  // Re-center the steering when the button is pressed
   steering.write(STEER_CENTER);
 
   delay(100);
 
 
-  // =================================================
-  // WAIT FOR BUTTON RELEASE
-  // =====================================================
-
-  while (
-    digitalRead(START_BUTTON) == LOW
-  ) {
+  // Wait until the button is released
+  while (digitalRead(START_BUTTON) == LOW) {
 
     steering.write(STEER_CENTER);
   }
 
 
+  // Short delay before movement begins
   delay(300);
 
-
-  // =================================================
-  // START
-  // =====================================================
 
   Serial.println("START");
   Serial.println("CORNER 0 / 12");
 
 
+  // Start driving straight
   steering.write(STEER_CENTER);
 
   driveForward(NORMAL_SPEED);
@@ -414,25 +426,27 @@ void setup() {
 
 void loop() {
 
+  // Check the floor color
   int color = detectColor();
 
 
   // =================================================
-  // BLUE
+  // BLUE LINE DETECTED
   // =====================================================
 
   if (color == 1) {
 
+    // We are currently on blue, so reset this counter
     nonBlueReadings = 0;
 
 
-    // React only once to each blue line
+    // Only react once to each blue line
     if (blueArmed) {
 
       blueArmed = false;
 
 
-      // Count corner
+      // Count this as one corner
       cornerCount++;
 
 
@@ -441,14 +455,11 @@ void loop() {
       Serial.println(" / 12");
 
 
-      // Perform turn
+      // Make the left turn
       turnLeft();
 
 
-      // =================================================
-      // AFTER 12 CORNERS = 3 LAPS
-      // =====================================================
-
+      // After 12 corners, 3 laps are complete
       if (cornerCount >= 12) {
 
         finishRun();
@@ -458,7 +469,7 @@ void loop() {
 
 
   // =================================================
-  // EVERYTHING ELSE
+  // NOT BLUE
   // =====================================================
 
   else {
@@ -466,16 +477,20 @@ void loop() {
     nonBlueReadings++;
 
 
-    // Must leave blue before another blue can trigger
+    // Wait for 3 non-blue readings before allowing
+    // the next blue line to trigger another turn.
+    //
+    // This prevents one wide blue line from being
+    // counted as multiple corners.
     if (nonBlueReadings >= 3) {
 
       blueArmed = true;
     }
 
 
-    // Always center when nothing is happening
+    // Normal driving:
+    // wheels centered and normal forward speed
     steering.write(STEER_CENTER);
-
 
     driveForward(NORMAL_SPEED);
   }
