@@ -5,7 +5,7 @@ This repository documents our autonomous vehicle for the WRO 2026 Future Enginee
 > **Team:** [Team name]  
 > **Country:** Saudi Arabia  
 > **School/Organization:** King Faisal School 
-> **Team members:** Layth Alzahrani & Mohamemed Albassam
+> **Team members:** Layth Alzahrani & Mohamemed Albassam  
 > **Coach:** [Set Thing]
 
 ## Repository guide
