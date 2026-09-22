@@ -6,7 +6,7 @@ This repository documents our autonomous vehicle for the WRO 2026 Future Enginee
 > **Country:** Saudi Arabia  
 > **School/Organization:** King Faisal Schools  
 > **Team members:** Layth Alzahrani & Mohammed Albassam  
-> **Coach:** Eng. Mohamed Salaheldin
+> **Coach:** Eng. Mohamed Salaheldin Abdulhaq
 
 ## Repository guide
 
