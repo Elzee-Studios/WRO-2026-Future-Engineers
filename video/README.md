@@ -6,6 +6,6 @@
 
 ## Obstacle Challenge
 
-- YouTube URL: https://www.youtube.com/watch?v=txuJ9J2I3i4
+- YouTube URL: https://www.youtube.com/watch?v=QbwrhJ6V9O4
 
 
