@@ -1,57 +1,62 @@
 # WRO 2026 Future Engineers — Self-Driving Car
 
-This repository documents our autonomous vehicle for the WRO 2026 Future Engineers category. It contains the engineering journal, mechanical and electrical designs, source code, testing evidence, photographs, and demonstration-video links needed to understand and reproduce the vehicle.
+This repository documents our autonomous vehicle for the WRO 2026 Future Engineers category. It contains our engineering notebook, technical documentation, source code, bill of materials, photographs and demonstration-video links.
 
 > **Team:** KFS Engineers  
 > **Country:** Saudi Arabia  
-> **School/Organization:** King Faisal School 
-> **Team members:** Layth Alzahrani & Mohamemed Albassam  
-> **Coach:** [Set Thing]
+> **School/Organization:** King Faisal Schools  
+> **Team members:** Layth Alzahrani & Mohammed Albassam  
+> **Coach:** Eng. Mohamed Salaheldin
 
 ## Repository guide
 
 | Section | Contents |
 |---|---|
-| [`engineering-journal/`](engineering-journal/) | Dated record of development, testing, failures, and improvements |
-| [`docs/`](docs/) | Technical explanations organized around the five WRO judging criteria |
-| [`hardware/`](hardware/) | Bill of materials and component specifications |
-| [`schemes/`](schemes/) | Wiring, mechanical-layout, power-distribution, and software diagrams |
-| [`src/`](src/) | Open Challenge, Obstacle Challenge, and shared source code |
-| [`vehicle-photos/`](vehicle-photos/) | Front, rear, left, right, top, and bottom vehicle photographs |
+| [`engineering-journal/`](engineering-journal/) | KFS Engineers WRO 2026 engineering notebook |
+| [`docs/`](docs/) | Technical documentation for the vehicle |
+| [`hardware/`](hardware/) | Bill of materials |
+| [`src/`](src/) | Open Challenge and Obstacle Challenge source code |
+| [`vehicle-photos/`](vehicle-photos/) | Vehicle photographs |
 | [`team-photos/`](team-photos/) | Team photographs |
-| [`video/`](video/) | Links to Open and Obstacle Challenge demonstration videos |
+| [`video/`](video/) | Challenge demonstration videos |
 
 ## 1. Project overview
 
-[Briefly describe the vehicle, its main controller, drive system, steering system, sensors, and overall strategy. Explain the main engineering problem the team tried to solve.]
+Our vehicle is built around an Arduino Mega with rear-wheel propulsion and servo-operated front steering. A DC motor drives the rear wheels through a differential, while a steering servo controls the front Ackermann linkage.
+
+For the Open Challenge, a ground color sensor detects blue floor lines. Each accepted blue-line detection triggers a timed left turn, and the vehicle counts 12 accepted detections before completing its final straight movement and stopping.
+
+For the Obstacle Challenge, the current program uses two predefined sequences of timed forward movements and steering commands.
 
 ## 2. Mobility and mechanical design
 
-[Summarize the chassis, drive axle, steering mechanism, wheels, motor selection, dimensions, weight, speed/torque reasoning, and the mechanical iterations that improved performance.]
+The vehicle uses a metal chassis with an upper electronics platform, rear-wheel propulsion through a differential and servo-operated front Ackermann steering.
 
 Full documentation: [`docs/01-mobility-and-mechanical-design.md`](docs/01-mobility-and-mechanical-design.md)
 
 ## 3. Power and sensor architecture
 
-[Summarize the battery, voltage regulation, power distribution, controller, sensors, wiring, sensor positions, calibration, and failure handling.]
+The vehicle uses a 12 V, 3000 mAh Studica battery and an Arduino Mega as its main controller. Hardware includes an L298N motor driver, steering servo, ground color sensor, five ultrasonic sensors and a HuskyLens 1.
 
 Full documentation: [`docs/02-power-and-sensor-architecture.md`](docs/02-power-and-sensor-architecture.md)
 
 ## 4. Software architecture and challenge strategy
 
-[Explain the software modules and how data flows from sensors to decision-making, steering, and motor control. Summarize the separate strategies for the Open and Obstacle Challenges.]
+Separate Arduino sketches are used for the Open Challenge and Obstacle Challenge.
+
+The Open Challenge uses ground-color detection, corner counting and timed steering. The Obstacle Challenge uses two predefined sequences of timed movements.
 
 Full documentation: [`docs/03-software-and-obstacle-strategy.md`](docs/03-software-and-obstacle-strategy.md)
 
 ## 5. Systems thinking and engineering decisions
 
-[Describe important constraints, alternatives considered, design tradeoffs, failures, testing evidence, and how the vehicle changed between versions.]
+This section documents the major engineering decisions, constraints, testing observations, wiring repairs and tradeoffs involved in the vehicle's development.
 
 Full documentation: [`docs/04-systems-thinking-and-decisions.md`](docs/04-systems-thinking-and-decisions.md)
 
 ## 6. Reproducing the vehicle
 
-[Provide exact assembly, wiring, dependency installation, compilation, upload, calibration, and testing instructions so another team could reproduce the system.]
+This section documents the vehicle's wiring, Arduino setup, software configuration, calibration and verification procedure.
 
 Full documentation: [`docs/05-reproducibility.md`](docs/05-reproducibility.md)
 
@@ -60,10 +65,6 @@ Full documentation: [`docs/05-reproducibility.md`](docs/05-reproducibility.md)
 - Open Challenge: [Add YouTube link]
 - Obstacle Challenge: [Add YouTube link]
 
-Each video should contain at least 30 seconds of autonomous driving and be public or accessible through its link.
+## 8. Engineering notebook
 
-## 8. Engineering journal
-
-The dated engineering journal is available in [`engineering-journal/`](engineering-journal/). It records our decisions and development process rather than only the final assembly.
-
-
+The engineering notebook is available in [`engineering-journal/`](engineering-journal/).
