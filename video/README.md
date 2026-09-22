@@ -2,7 +2,7 @@
 
 ## Open Challenge
 
-- YouTube URL: [Add link]
+- YouTube URL: https://www.youtube.com/watch?v=uSCZ3VZdSqs
 
 ## Obstacle Challenge
 
