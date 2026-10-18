@@ -2,113 +2,81 @@
 
 ## Software overview
 
-The vehicle uses separate Arduino sketches for the Open Challenge and Obstacle Challenge. Both programs run on an Arduino Mega and are uploaded using the Arduino IDE. The Open Challenge sketch uses the Arduino `Servo` library.
+The Invader uses a separate Arduino sketch for each challenge. Both run on the Arduino Mega 2560 and control the DRV8871 drive motor and front steering servo. The Open Challenge focuses on completing three laps and stopping in the finish section. The Obstacle Challenge also uses a HuskyLens 2 and ultrasonic sensors to navigate around obstacles.
 
-### Open Challenge functions
-
-| Function | Responsibility |
-|---|---|
-| `setup()` | Initialize pins and wait for the start-button sequence |
-| `driveForward()` | Set forward direction and apply the PWM command |
-| `stopMotor()` | Set PWM to zero and both direction outputs LOW |
-| `readColorChannel()` | Select a color filter and measure one pulse |
-| `averageColor()` | Average three returned channel measurements |
-| `detectColor()` | Classify the color channels and print diagnostics |
-| `turnLeft()` | Apply the timed turn, then restore straight commands |
-| `finishRun()` | Run the final straight and hold the stopped state |
-| `loop()` | Manage classification, re-arming and corner counting |
-
-## Module relationships
-
-In the Open Challenge, the ground color sensor provides red, green and blue measurements. The program averages the readings and classifies the detected surface as BLUE, ORANGE or OTHER.
-
-When BLUE is detected while the system is armed, the program increments the corner counter and performs a timed left turn. Three consecutive non-blue readings re-arm the system for the next BLUE detection.
-
-The control flow is:
-
-`Wait for start → Read color → Classify → BLUE detected? → Count corner → Turn left → Check corner count → Continue or finish`
-
-After 12 accepted BLUE detections, the vehicle performs its final straight movement and stops.
+The first blue or orange corner line determines the driving direction. Blue selects anticlockwise travel and left turns; orange selects clockwise travel and right turns. The vehicle then counts 12 corners, corresponding to four corners on each of three laps.
 
 ## Open Challenge strategy
 
-The Open Challenge uses the ground color sensor to detect blue floor markings.
+The Open Challenge sketch reads the downward-facing TCS3200 color sensor and the ultrasonic sensors. Color readings identify the corner lines, while distance readings provide information about the surrounding walls.
 
-A BLUE detection triggers a left turn only when `blueArmed` is true. After a BLUE detection is accepted, the system is disarmed until three consecutive non-blue readings are received.
+The program follows this sequence:
 
-The vehicle counts accepted blue-line detections as corners:
+`Wait for button → Kick start → Read sensors → Select direction → Count and turn at corners → Drive into finish section → Brake and stop`
 
-`4 corners per lap × 3 laps = 12 corners`
+### Direction and corner counting
 
-After the twelfth accepted BLUE detection, the vehicle completes the normal left turn and enters the finish routine.
+Before the first line, the driving direction is unset. The first accepted blue line selects left turns; the first accepted orange line selects right turns. For the remainder of the run, the program counts lines of the selected color.
 
-The finish routine:
+After an accepted line, the program temporarily disarms line detection. It requires 20 consecutive readings outside the selected color before another line can trigger a turn. This reduces the chance of counting one wide line more than once.
 
-- Centers the steering at 82°
-- Drives forward at PWM 140 for 1250 ms
-- Stops the motor
-- Holds the steering at 82° until reset
+| Corner | Turn duration |
+|---|---:|
+| First | 2,200 ms |
+| Second through eleventh | 1,800 ms |
+| Twelfth | 2,100 ms |
+
+The steering commands are 82° for straight travel, 55° for left turns, and 109° for right turns. These are servo commands, not measured wheel or heading angles.
+
+### Motor and finish control
+
+At the start, the motor receives PWM 255 for 150 ms to get the vehicle moving. It then runs at a normal command of 200. The DRV8871 receives its motor commands through D5 and D6.
+
+After the twelfth turn, the vehicle drives straight for 1,500 ms, brakes for 300 ms, and remains stopped until reset.
+
+### Color reading
+
+For each decision, the TCS3200 provides one red, one green, and one blue reading. The program waits 300 µs after selecting a channel and allows up to 5,000 µs for its pulse. The Open Challenge color ranges and calibration procedure are documented in [Power and Sensor Architecture](02-power-and-sensor-architecture.md).
+
+Serial output at 115200 baud reports sensor readings and corner events for calibration and debugging.
 
 ## Obstacle Challenge strategy
 
-The Obstacle Challenge uses two predefined sequences of timed movements:
+The Obstacle Challenge sketch combines three sources of information:
 
-`runLap()` followed by `runLap2()`
+- **HuskyLens 2:** Identifies red and green obstacles and reports their positions in the camera image.
+- **Five ultrasonic sensors:** Measure nearby walls and objects for steering corrections and collision avoidance.
+- **TCS3200 color sensor:** Identifies corner lines and determines the driving direction.
 
-The program uses forward movements, gentle steering corrections and stronger left corner commands. Each movement runs for a fixed duration before the next command begins.
+The vehicle aims to pass **red obstacles on the right** and **green obstacles on the left**. When it detects a relevant obstacle, it selects a target and steers to keep that obstacle on the appropriate side of the camera image. If both colors are visible, the code uses their image positions to choose which obstacle to address first.
 
-The submitted program does not use the HuskyLens, ultrasonic sensors or ground color sensor during the Obstacle Challenge.
+On a straight section, the steering logic gives priority to immediate collision avoidance, then obstacle navigation, then wall clearance and lane centering. After passing an obstacle or completing a turn, the vehicle briefly holds a straight heading before resuming normal corrections.
 
-### Movement commands
+The code uses the selected floor-line color to count corners. It also contains backup turn conditions for cases where the expected line is missed, including detection of the other line color or a nearby wall ahead. Clockwise corner timing can be adjusted using the measured distance to the inner wall.
 
-| Function | Servo | PWM | Purpose |
-|---|---:|---:|---|
-| `FORWARD(ms)` | 82° | 150 | Straight movement |
-| `LEFT(ms)` | 65° | 150 | Gentle left correction |
-| `RIGHT(ms)` | 92° | 150 | Gentle right correction |
-| `CORNER_LEFT(ms)` | 55° | 220 | Stronger left corner command |
-| `STOP()` | 82° | 0 | Motor stopped and steering centered |
+After 12 corners, the sketch drives into the starting section and stops. **Parallel parking is not implemented in this sketch.**
 
-The first sequence contains 18 timed movements totaling 9.09 seconds of motion delays.
+## Control functions
 
-The second sequence contains 16 timed movements totaling 8.59 seconds of motion delays.
+| Function | Responsibility |
+|---|---|
+| `setup()` | Initialize the motor, steering, sensors, camera connection, and start button |
+| `driveForward()` | Send a speed command to the DRV8871 |
+| `stopMotor()` / `brakeMotor()` | Stop or briefly brake the drive motor |
+| `readColorChannel()` / `detectColor()` | Read and classify the floor color |
+| `updateDistances()` | Refresh ultrasonic distance readings |
+| `updateCamera()` | Read HuskyLens 2 detections and select an obstacle target |
+| `steerOnStraight()` | Choose a steering correction using obstacles and wall distances |
+| `turnForDirection()` | Carry out a left or right corner turn |
+| `finishRun()` | Drive into the finish section, brake, and hold the stopped state |
+| `loop()` | Repeatedly update sensors, identify corners, and control movement |
 
-After both sequences are completed, the vehicle stops and remains stopped until the controller is reset.
+The two sketches share the same overall vehicle hardware, but their steering and sensor settings should be checked in the specific sketch being uploaded.
 
-## Control and tuning
+## Known limitations and checks
 
-### Open Challenge
-
-| Setting | Current value |
-|---|---:|
-| Straight steering | 82° |
-| Left steering | 55° |
-| Straight PWM | 140 / 255 |
-| Turn PWM | 155 / 255 |
-| Turn duration | 1000 ms |
-| Finish forward duration | 1250 ms |
-
-The first two Open Challenge attempts were used for steering adjustment. The following three complete-course attempts each completed three laps.
-
-### Color classification
-
-| Condition | BLUE | ORANGE |
-|---|---:|---:|
-| Red channel R | 10000–19000 | 17500–25500 |
-| Green channel G | 9000–14500 | 12000–16500 |
-| Blue channel B | 11000–20500 | 13000–19000 |
-| Additional test | `B + 3000 >= R` | `R > B + 3000` |
-
-For each color channel, three readings are averaged before classification.
-
-The thresholds were selected from readings collected during testing with the ground color sensor mounted 2.75 cm above the floor.
-
-## Failure handling
-
-If no color-sensor pulse is received within the 30,000 µs timeout, the reading function returns zero.
-
-The three-reading re-arm rule reduces repeated BLUE triggers while the sensor remains over the same blue line.
-
-At the end of either challenge program, the motor is stopped and the steering is centered.
-
-The Obstacle Challenge uses timed movements without sensor feedback, so its path depends on the starting pose, battery condition, traction and configured obstacle layout.
+- A false corner-line reading can cause an early turn, while a completely missed line can leave the corner count short. The Obstacle Challenge sketch includes backup turn conditions, but these do not guarantee recovery in every layout.
+- Color thresholds depend on the mat, sensor height, and lighting. Check the serial readings at the venue.
+- Timed turns can vary with traction, battery condition, and starting position. Full runs in both directions are needed to evaluate their reliability.
+- Camera detections must be checked while the vehicle is moving. A powered camera or a working connection alone does not demonstrate reliable obstacle passes.
+- Parking remains a separate development task.
