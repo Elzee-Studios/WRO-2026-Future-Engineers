@@ -63,7 +63,7 @@ Full documentation: [`docs/05-reproducibility.md`](docs/05-reproducibility.md)
 ## 7. Demonstration videos
 
 - Open Challenge: https://www.youtube.com/watch?v=uSCZ3VZdSqs
-- Obstacle Challenge: [Add YouTube link]
+- Obstacle Challenge: https://www.youtube.com/watch?v=QbwrhJ6V9O4
 
 ## 8. Engineering notebook
 
